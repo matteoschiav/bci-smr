@@ -9,5 +9,5 @@ codepath = [rootpath 'bci4neurorobotics-code/'];
 
 filetrain{1} = 'b1.20150914.102659.offline.mi.mi_rlbf.gdf';
 
-offline = bci(filetrain{1},trainpath,codepath);
+offline = bci_preprocess(filetrain{1},trainpath,codepath);
 offline = offline.compute_PSD();

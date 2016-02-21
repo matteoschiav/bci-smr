@@ -1,20 +1,7 @@
-classdef bci
-    %BCI This class encapsulates the functions necessary for BCI
-    %   This class contains all the functions for the analysis of a single
-    %   GDF file for Brain Computer Interface
-    
-    properties (Constant)
-        % events
-        EVENT_TRIAL_START = 1;
-        EVENT_LEFT_HAND   = 769;
-        EVENT_RIGHT_HAND  = 770;
-        EVENT_BOTH_FEET   = 771;
-        EVENT_REST        = 783;
-        EVENT_CFEEDBACK   = 781;
-        TRIAL_PERIOD      = 4;    % in seconds:
-                                  % - 1 seconds -> CUE 
-                                  % - 3 seconds -> CONTINUOUS FEEDBACK
-    end
+classdef bci_preprocess
+    %BCI_PREPROCESS Preprocessing phase of BCI
+    %   This class contains all the funcions necessary in the preprocessing
+    %   phase of a GDF file used in BCI
     
     properties
         % file and paths
@@ -53,7 +40,7 @@ classdef bci
     end
     
     methods
-        function this = bci(fname,datapath,codepath)
+        function this = bci_preprocess(fname,datapath,codepath)
             this.filename = fname;
             this.datapath = datapath;
             this.codepath = codepath;
