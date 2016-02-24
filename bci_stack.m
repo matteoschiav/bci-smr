@@ -1,5 +1,5 @@
 classdef bci_stack
-    %BCI_STACK Data belonging to a single set
+    %BCI_STACK Stack of the data belonging to a single set
     %   Class containing the arrays of data belonging to a single dataset
     %   (offline/online).
     
