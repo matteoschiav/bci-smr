@@ -28,6 +28,8 @@ classdef bci_preprocess
         WinStart    % begin of each window [samples]
         WinStop     % end of each window [samples]
         NumWins     % number of windows in current data
+        WinPos      % window of position of the events (each event is associated
+                    % with the window starting when the event takes place)
         
         % Power Spectral Density parameters
         NFFT        % number of discrete Fourier transform points
@@ -59,6 +61,9 @@ classdef bci_preprocess
 
             % set buffering parameters
             this = this.set_buffering(0.5,32);
+            
+            % compute PSD
+            this = this.compute_PSD();
         end
                 
         function this = load_file(this)
@@ -96,6 +101,8 @@ classdef bci_preprocess
             this.WinStart = 1:this.WinStep:size(this.s,1)-this.WinLength;
             this.WinStop = this.WinStart + this.WinLength;
             this.NumWins = length(this.WinStart);
+            % position (window) of the events
+            this.WinPos = floor(this.pos./this.WinStep);
         end
         
         function this = compute_PSD(this,func)
