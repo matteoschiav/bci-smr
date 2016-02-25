@@ -12,4 +12,4 @@ filetrain{2} = 'b1.20150914.104000.offline.mi.mi_rlbf.gdf';
 filetrain{3} = 'b1.20150914.105054.offline.mi.mi_rlbf.gdf';
 
 
-offline = bci_stack(filetrain,trainpath,codepath);
+offline = bci_offline(filetrain,trainpath,codepath);
