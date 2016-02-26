@@ -26,6 +26,9 @@ classdef bci_offline
         TRIAL_STOP      % stop of the trial (from cue) [s]
         TRIAL_PERIOD    % trial duration [s]
         
+        % selected event
+        SelEvents       % array containing the code of the selected events
+        
         % trial selection
         TrialId         % identifier of the selected trials
         TrialLb         % label of each event
@@ -43,8 +46,9 @@ classdef bci_offline
         PSD_task        % PSD of the task (from cue to end of trial)
         
         % ERD|ERS data
-        ERD             % ERD|ERS
-        f_ERD            % frequencies where ERD|ERS is computed
+        ERD             % ERD|ERS [%]
+        actERD          % event-processed ERD|ERS [%]
+        f_ERD           % frequencies where ERD|ERS is computed
     end
     
     methods
@@ -79,7 +83,7 @@ classdef bci_offline
             %  * right hand
             %  * both feet
             %  * rest
-            if nargin < 2
+            if nargin < 1
                 sel_trials = {'left hand' 'right hand' 'both feet' 'rest'};
             end
             
@@ -88,10 +92,12 @@ classdef bci_offline
             id_string = {'left hand' 'right hand' 'both feet' 'rest'};
             
             % extract selected trials
+            this.SelEvents = [];
             this.TrialId = zeros(size(this.data.type));
             for i = 1:length(id_num)
-                if ~isempty(ismember(sel_trials,id_string(i)))
+                if ~isempty(find(ismember(sel_trials,id_string(i)),1))
                     this.TrialId = this.TrialId | (this.data.type == id_num(i));
+                    this.SelEvents = [this.SelEvents id_num(i)];
                 end
             end
             
@@ -113,6 +119,58 @@ classdef bci_offline
             % extract baseline and task from trial
             this.PSD_baseline = this.PSD_trial(1:this.CueInTrial,:,:,:);
             this.PSD_task = this.PSD_trial(this.CueInTrial+1:end,:,:,:);
+        end
+        
+        function this = calcERD(this,freqs)
+            [this.f_ERD,ind_f,a] = intersect(this.data.f,freqs);
+            
+            baseline = permute(repmat(squeeze(mean(log(1+this.PSD_baseline))),1,1,1,80),[4 1 2 3]);
+            logPSD_trial = log(1+this.PSD_trial);
+            
+            this.ERD = (logPSD_trial - baseline)./baseline.*100;
+            
+            this.ERD = this.ERD(:,ind_f,:,:);
+            
+            this.actERD = zeros(size(this.ERD,1),size(this.ERD,2),this.data.NumChannels,length(this.SelEvents));
+            for ev=1:length(this.SelEvents)
+                this.actERD(:,:,:,ev) = mean(this.ERD(:,:,:,this.TrialLb==this.SelEvents(ev)),4);
+            end
+            
+        end
+        
+        function this = plotERD(this)
+            time = this.TRIAL_START:1/this.data.WinRate:this.TRIAL_STOP;
+            this.plotElectrodes(time,this.f_ERD,this.actERD);
+        end
+        
+        function plotElectrodes(this,time,freq,data)
+            NumRows = 4;
+            NumCol = 5;
+            
+            ChanLayout = [0 0 1 0 0; 2 3 4 5 6; 7 8 9 10 11; 12 13 14 15 16];
+            
+            Electrode = {'Fz' 'FC3' 'FC1' 'FCz' 'FC2' 'FC4' 'C3' 'C1' 'Cz' 'C4' 'C2' 'CP3' 'CP1' 'CPz' 'CP2' 'CP4'};
+
+            for CurEv=1:length(this.SelEvents)
+                figure
+                for ch=1:this.data.NumChannels
+                    [x,y] = find(ChanLayout == ch);
+                    pos = (x-1)*NumCol+y;
+                    subplot(NumRows,NumCol,pos);
+
+                    imagesc(time,freq,data(:,:,ch,CurEv)');
+                    colormap(jet);
+
+                    xlabel('[s]');
+                    ylabel('[Hz]');
+                    title(Electrode(ch));
+
+                end
+
+                subplot(NumRows,NumCol,5);
+                colorbar;
+                axis off;
+            end
         end
         
     end

@@ -13,3 +13,5 @@ filetrain{3} = 'b1.20150914.105054.offline.mi.mi_rlbf.gdf';
 
 
 offline = bci_offline(filetrain,trainpath,codepath);
+offline = offline.calcERD(4:48);
+offline.plotERD();
