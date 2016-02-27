@@ -98,7 +98,7 @@ classdef bci_preprocess
             this.WinPeriod = period;
             this.WinLength = this.WinPeriod*this.SampleRate;
             this.WinStep = step;
-            this.WinStart = 1:this.WinStep:size(this.s,1)-this.WinLength;
+            this.WinStart = 1:this.WinStep:size(this.slap,1)-this.WinLength;
             this.WinStop = this.WinStart + this.WinLength;
             this.NumWins = length(this.WinStart);
             % position (window) of the events
@@ -135,7 +135,7 @@ classdef bci_preprocess
                         end
 
                         % extract signal
-                        sloc = this.s(this.WinStart(win):this.WinStop(win),:);
+                        sloc = this.slap(this.WinStart(win):this.WinStop(win),:);
 
                         % for each channel, calculate PSD
                         for ch = 1:this.NumChannels
@@ -154,7 +154,7 @@ classdef bci_preprocess
                         end
 
                         % extract signal
-                        sloc = this.s(this.WinStart(win):this.WinStop(win),:);
+                        sloc = this.slap(this.WinStart(win):this.WinStop(win),:);
                         
                         % generate periodogram window
                         window = hann(size(sloc,1));
