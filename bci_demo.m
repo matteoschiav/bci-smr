@@ -14,6 +14,8 @@ codepath = [rootpath 'bci4neurorobotics-code/'];
 % classifier train
 filetrain{1} = 'b1.20150914.102659.offline.mi.mi_rlbf.gdf';
 filetrain{2} = 'b1.20150914.104000.offline.mi.mi_rlbf.gdf';
+
+% classifier test
 filetrain{3} = 'b1.20150914.105054.offline.mi.mi_rlbf.gdf';
 
 % TEST DATA
@@ -32,7 +34,8 @@ offline = offline.calcERD(4:48);
 % offline.plotPSD();
 
 %%
-offline = offline.paramFE(4:48,[2 5],{'right hand' 'both feet'});
+offline = offline.paramFE(4:48,[2 5],{'left hand' 'both feet'});
+offline = offline.divideTrainTest(60);
 offline = offline.computeDP();
 offline.plotDP();
 offline.plotCanonical();
@@ -50,5 +53,7 @@ for i = 1:length(classifiers)
     offclass{i} = tmpclass;
     disp(class_desc{i});
     fprintf('Success probability on train data: %f\n',offclass{i}.probSuccTrain);
+    offclass{i} = offclass{i}.testClass();
+    fprintf('Success probability on test data: %f\n',offclass{i}.probSuccTest);
 end
         

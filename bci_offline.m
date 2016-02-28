@@ -58,6 +58,13 @@ classdef bci_offline < bci_stack
         NumFeatures     % number of features
         NumObs          % number of observation
         
+        % train-test data
+        PosTrainTest        % position of the last train observation
+        vecTrialTrain_FE    % vector containing trials selected for train
+        logPSDtrain_FE      % PSD of trials selected for train
+        vecTrialTest_FE     % vector containing trials selected for test
+        logPSDtest_FE       % PSD of trials selected for test
+        
         % discriminant power
         matDP           % discriminant power
         freqDP          % frequencies used for calculating discriminant power
@@ -66,12 +73,21 @@ classdef bci_offline < bci_stack
         disc            % transformed data
         
         % classification data
+        classType       % string identifying classificator type
+                        % 'lda' -> Linear Discriminant Analysis
+                        % 'qda' -> Quadratic Discriminant Analysis
+                        % 'knn' -> k-nearest neighbour Classification
+                        % 'gau' -> Gaussian Classification
         selFeatures     % features selected for classification
-        logPSD_sel      % PSD for the selected features
+        logPSDtrain_sel % PSD of train trials for the selected features
         class           % classifier
         
         % classification test (on train data)
         probSuccTrain   % success probability on train data
+        
+        % classification test (on test data)
+        logPSDtest_sel  % PSD of test trials of the selected features
+        probSuccTest    % success probability on test data
     end
     
     methods
@@ -216,7 +232,7 @@ classdef bci_offline < bci_stack
                     plot(freqs,mean(mean(20.*log10(this.PSD_task(:,indf,ch,this.TrialLb==this.SelEvents(CurEv))),4),1),'Linewidth',1);
                     xlim([min(freqs) max(freqs)])
 
-                    xlabel('[s]');
+                    xlabel('[Hz]');
                     ylabel('PSD');
                     title(Electrode(ch));
                 end
@@ -252,12 +268,20 @@ classdef bci_offline < bci_stack
             this.vecTrial_FE = this.TrialLb(this.SelTrialsFE);
             this.vecTrial_FE = repmat(this.vecTrial_FE',[this.NumWinFE 1]);
             this.vecTrial_FE = reshape(this.vecTrial_FE,[this.NumObs 1]);
+        end
         
+        function this = divideTrainTest(this,NumTrialTrain)
+            this.PosTrainTest = NumTrialTrain*this.NumWinFE;
+            this.vecTrialTrain_FE = this.vecTrial_FE(1:this.PosTrainTest);
+            this.vecTrialTest_FE = this.vecTrial_FE(this.PosTrainTest+1:end);
+            
+            this.logPSDtrain_FE = this.logPSD_FE(1:this.PosTrainTest,:);
+            this.logPSDtest_FE = this.logPSD_FE(this.PosTrainTest+1:end,:);
         end
         
         function this = computeDP(this)
             addpath([this.codepath '/extra/cva']);
-            [this.dp,~,this.v,~,this.disc] = cva_tun_opt(this.logPSD_FE,this.vecTrial_FE);
+            [this.dp,~,this.v,~,this.disc] = cva_tun_opt(this.logPSDtrain_FE,this.vecTrialTrain_FE);
             
             this.freqDP = this.f_FE;
             this.matDP = reshape(this.dp,[this.Lenf_FE this.NumChannels]);
@@ -278,8 +302,8 @@ classdef bci_offline < bci_stack
         function plotCanonical(this)
             addpath([this.codepath '/extra/gkde']);
             
-            x1 = this.disc(this.vecTrial_FE == this.classFE(1));
-            x2 = this.disc(this.vecTrial_FE == this.classFE(2));
+            x1 = this.disc(this.vecTrialTrain_FE == this.classFE(1));
+            x2 = this.disc(this.vecTrialTrain_FE == this.classFE(2));
             
             p1 = gkdeb(x1);
             p2 = gkdeb(x2);
@@ -293,18 +317,27 @@ classdef bci_offline < bci_stack
             [~,sortIndex] = sort(this.dp(:),'descend');
             this.selFeatures = sortIndex(1:n_feat);
             
-            this.logPSD_sel = this.logPSD_FE(:,this.selFeatures);
+            this.logPSDtrain_sel = this.logPSDtrain_FE(:,this.selFeatures);
         end
         
         function this = trainClass(this,type)
             addpath(genpath([this.codepath '/extra/classification']));
             
+            this.classType = type;
+            
             % train classifier
-            this.class = classTrain(this.logPSD_sel,this.vecTrial_FE,type);
+            this.class = classTrain(this.logPSDtrain_sel,this.vecTrialTrain_FE,this.classType);
             
             % test classifier on train data
-            [~, cls] = classTest(this.class,this.logPSD_sel);
-            this.probSuccTrain = length(cls(cls==this.vecTrial_FE))/size(cls,1);
+            [~, cls] = classTest(this.class,this.logPSDtrain_sel);
+            this.probSuccTrain = length(cls(cls==this.vecTrialTrain_FE))/size(cls,1);
+        end
+        
+        function this = testClass(this)
+            this.logPSDtest_sel = this.logPSDtest_FE(:,this.selFeatures);
+            
+            [~, cls] = classTest(this.class,this.logPSDtest_sel);
+            this.probSuccTest = length(cls(cls==this.vecTrialTest_FE))/size(cls,1);
         end
         
     end
