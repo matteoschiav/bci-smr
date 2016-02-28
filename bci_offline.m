@@ -79,6 +79,7 @@ classdef bci_offline < bci_stack
                         % 'knn' -> k-nearest neighbour Classification
                         % 'gau' -> Gaussian Classification
         selFeatures     % features selected for classification
+        featArray       % array of the selected features (channel,frequency,DP)
         logPSDtrain_sel % PSD of train trials for the selected features
         class           % classifier
         
@@ -314,10 +315,15 @@ classdef bci_offline < bci_stack
         end
         
         function this = feature_extraction(this,n_feat)
-            [~,sortIndex] = sort(this.dp(:),'descend');
+            [sortedDP,sortIndex] = sort(this.dp(:),'descend');
             this.selFeatures = sortIndex(1:n_feat);
             
             this.logPSDtrain_sel = this.logPSDtrain_FE(:,this.selFeatures);
+            
+            this.featArray = zeros(n_feat,3);
+            this.featArray(:,1) = floor(this.selFeatures/this.Lenf_FE)+1;
+            this.featArray(:,2) = this.f_FE(mod(this.selFeatures,this.Lenf_FE));
+            this.featArray(:,3) = sortedDP(1:n_feat);
         end
         
         function this = trainClass(this,type)
