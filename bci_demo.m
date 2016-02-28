@@ -56,4 +56,19 @@ for i = 1:length(classifiers)
     offclass{i} = offclass{i}.testClass();
     fprintf('Success probability on test data: %f\n',offclass{i}.probSuccTest);
 end
-        
+
+
+%% online analysis
+onlinepath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
+
+onfile{1} = 'b1.20150915.101044.online.mi.mi_rlbf.gdf';
+onfile{2} = 'b1.20150915.101734.online.mi.mi_rlbf.gdf';
+onfile{3} = 'b1.20150915.102331.online.mi.mi_rlbf.gdf';
+onfile{4} = 'b1.20150915.103128.online.mi.mi_rlbf.gdf';
+
+online = {};
+for i = 1:length(classifiers)
+    online{i} = bci_online(onfile,onlinepath,codepath);
+    online{i} = online{i}.featureExtraction(offclass{i}.f_FE,offclass{i}.selFeatures);
+    online{i} = online{i}.computePP(offclass{i}.class);
+end
