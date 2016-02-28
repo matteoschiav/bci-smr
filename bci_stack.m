@@ -54,6 +54,13 @@ classdef bci_stack
             % load EEG parameters
             this.SampleRate = this.stacks{1}.SampleRate;
             this.NumChannels = this.stacks{1}.NumChannels;
+                      
+            this.slap = [];
+            this.type = [];
+            this.pos = [];
+            this.WinStart = [];
+            this.WinStop = [];
+            this.WinPos = [];
             
             % load EEG data and buffering parameters
             for i = 1:length(this.stacks)
