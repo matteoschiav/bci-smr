@@ -157,7 +157,8 @@ classdef bci_preprocess
                         sloc = this.slap(this.WinStart(win):this.WinStop(win),:);
                         
                         % generate periodogram window
-                        window = hann(size(sloc,1));
+                        % window = hann(size(sloc,1));
+                        window = [];
 
                         % for each channel, calculate PSD
                         for ch = 1:this.NumChannels
