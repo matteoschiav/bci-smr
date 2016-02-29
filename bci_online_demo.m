@@ -4,12 +4,13 @@ close all
 clear classes
 
 rootpath = '/home/schiavon/Matteo/luxor/cisas/bci/';
+% rootpath = '/home/schiavon/luxor/cisas/esami/bci/';
 % datapath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
 codepath = [rootpath 'bci4neurorobotics-code/'];
 
-% oldfolder = cd([codepath 'biosig']);
-% biosig_installer;
-% cd(oldfolder);
+oldfolder = cd([codepath 'biosig']);
+biosig_installer;
+cd(oldfolder);
 
 onlinepath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
 
@@ -37,8 +38,8 @@ for i = 1:length(classifiers)
     online{i} = online{i}.featureExtraction(f_FE,selFeatures);
     online{i} = online{i}.computePP(class);
     
-    online{i} = online{i}.accumParam(0.05,0.995);
+    online{i} = online{i}.accumParam(0.7,0.97);
     online{i} = online{i}.onlineCycle();
     
-    fprintf('Success probability = %f\n', online{i}.probSucc);
+    fprintf('Success probability = %f -- No classification = %f\n', online{i}.probSucc,online{i}.none/online{i}.NumTrials);
 end

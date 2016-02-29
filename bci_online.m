@@ -106,6 +106,9 @@ classdef bci_online < bci_stack
                     if this.P(i,1)>this.threshold || this.P(i,2)>this.threshold
                         break
                     end
+%                     if this.pp(j,1) < 0.55 && this.pp(j,2) < 0.55
+%                         continue
+%                     end
                     this.P(i,1) = this.alpha*this.P(i,1) + (1-this.alpha)*this.pp(j,1);
                     this.P(i,2) = this.alpha*this.P(i,2) + (1-this.alpha)*this.pp(j,2);
 %                     disp(['P1 = ' num2str(this.P(i,1)) ' - P2 = ' num2str(this.P(i,2))]);

@@ -4,13 +4,14 @@ close all
 clear classes
 
 rootpath = '/home/schiavon/Matteo/luxor/cisas/bci/';
+% rootpath = '/home/schiavon/luxor/cisas/esami/bci/';
 trainpath = [rootpath 'bci4neurorobotics-data/smr/20150914_b1/'];
 codepath = [rootpath 'bci4neurorobotics-code/'];
 onlinepath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
 
-% oldfolder = cd([codepath 'biosig']);
-% biosig_installer;
-% cd(oldfolder);
+oldfolder = cd([codepath 'biosig/']);
+biosig_installer;
+cd(oldfolder);
 
 % classifier train
 filetrain{1} = 'b1.20150914.102659.offline.mi.mi_rlbf.gdf';
@@ -42,6 +43,9 @@ offline.plotDP();
 offline.plotCanonical();
 offline = offline.feature_extraction(4);
 
+offline.featArray
+
+%%
 classifiers = {'lda','qda','knn','gau'};
 class_desc = {'Linear Discriminant Analysis',...
     'Quadratic Discriminant Analysis',...

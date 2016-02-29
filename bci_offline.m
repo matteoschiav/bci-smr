@@ -190,7 +190,7 @@ classdef bci_offline < bci_stack
             Electrode = {'Fz' 'FC3' 'FC1' 'FCz' 'FC2' 'FC4' 'C3' 'C1' 'Cz' 'C4' 'C2' 'CP3' 'CP1' 'CPz' 'CP2' 'CP4'};
 
             for CurEv=1:length(this.SelEvents)
-                figure
+                figure('position',[1 1 1500 1000]);
                 for ch=1:this.NumChannels
                     [x,y] = find(ChanLayout == ch);
                     pos = (x-1)*NumCol+y;
@@ -199,14 +199,16 @@ classdef bci_offline < bci_stack
                     imagesc(xdata,ydata,zdata(:,:,ch,CurEv)');
                     colormap(jet);
 
-                    xlabel('[s]');
-                    ylabel('[Hz]');
+                    xlabel('Time [s]');
+                    ylabel('Frequency [Hz]');
                     title(Electrode(ch));
 
                 end
 
                 subplot(NumRows,NumCol,5);
-                colorbar;
+                hcb=colorbar;
+                set(hcb,'YTick',[0 1]);
+                set(hcb,'YTickLabel',{'ERD' 'ERS'})
                 axis off;
                 
                 suptitle(['ERD|ERS - ' this.SelEventsLb{CurEv}])
@@ -224,7 +226,7 @@ classdef bci_offline < bci_stack
             [freqs,indf,~] = intersect(this.f,fr);
 
             for CurEv=1:length(this.SelEvents)
-                figure
+                figure('position',[1 1 1500 1000]);
                 for ch=1:this.NumChannels
                     [x,y] = find(ChanLayout == ch);
                     pos = (x-1)*NumCol+y;
@@ -235,8 +237,8 @@ classdef bci_offline < bci_stack
                     plot(freqs,mean(mean(20.*log10(this.PSD_task(:,indf,ch,this.TrialLb==this.SelEvents(CurEv))),4),1),'Linewidth',1);
                     xlim([min(freqs) max(freqs)])
 
-                    xlabel('[Hz]');
-                    ylabel('PSD');
+                    xlabel('Frequency [Hz]');
+                    ylabel('PSD [dB]');
                     title(Electrode(ch));
                 end
                 subplot(NumRows,NumCol,5);
