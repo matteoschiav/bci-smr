@@ -208,10 +208,12 @@ classdef bci_offline < bci_stack
                 subplot(NumRows,NumCol,5);
                 colorbar;
                 axis off;
+                
+                suptitle(['ERD|ERS - ' this.SelEventsLb{CurEv}])
             end
         end
         
-        function plotPSD(this)
+        function plotPSD(this,fr)
             NumRows = 4;
             NumCol = 5;
             
@@ -219,7 +221,7 @@ classdef bci_offline < bci_stack
             
             Electrode = {'Fz' 'FC3' 'FC1' 'FCz' 'FC2' 'FC4' 'C3' 'C1' 'Cz' 'C4' 'C2' 'CP3' 'CP1' 'CPz' 'CP2' 'CP4'};
             
-            [freqs,indf,~] = intersect(this.f,4:24);
+            [freqs,indf,~] = intersect(this.f,fr);
 
             for CurEv=1:length(this.SelEvents)
                 figure
@@ -239,6 +241,8 @@ classdef bci_offline < bci_stack
                 end
                 subplot(NumRows,NumCol,5);
                 axis off;
+                
+                suptitle(['EEG spectrum - ' this.SelEventsLb{CurEv}])
             end
         end
         
@@ -297,7 +301,7 @@ classdef bci_offline < bci_stack
             
             xlabel('Frequencies [Hz]');
             ylabel('Channels');
-            title([ this.classFElb{1} '-' this.classFElb{2} ]);
+            title([ 'Discriminant power: ' this.classFElb{1} '-' this.classFElb{2} ]);
         end
         
         function plotCanonical(this)
@@ -312,6 +316,9 @@ classdef bci_offline < bci_stack
             figure();
             plot(p1.x,p1.f,p2.x,p2.f,'r');
             legend(this.classFElb{1},this.classFElb{2});
+            xlabel('x');
+            ylabel('pdf [a.u.]');
+            title('Gaussian Kernel Density Estimation');
         end
         
         function this = feature_extraction(this,n_feat)

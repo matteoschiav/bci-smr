@@ -6,6 +6,7 @@ clear classes
 rootpath = '/home/schiavon/Matteo/luxor/cisas/bci/';
 trainpath = [rootpath 'bci4neurorobotics-data/smr/20150914_b1/'];
 codepath = [rootpath 'bci4neurorobotics-code/'];
+onlinepath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
 
 % oldfolder = cd([codepath 'biosig']);
 % biosig_installer;
@@ -31,7 +32,7 @@ filetrain{3} = 'b1.20150914.105054.offline.mi.mi_rlbf.gdf';
 offline = bci_offline(filetrain,trainpath,codepath);
 offline = offline.calcERD(4:48);
 % offline.plotERD();
-% offline.plotPSD();
+% offline.plotPSD(0:48);
 
 %%
 offline = offline.paramFE(4:48,[2 5],{'left hand' 'both feet'});
@@ -48,6 +49,8 @@ class_desc = {'Linear Discriminant Analysis',...
     'Gaussian Classification'};
 offclass = {};
 
+classpath = [onlinepath '/tmp'];
+
 for i = 1:length(classifiers)
     tmpclass = offline.trainClass(classifiers{i});
     offclass{i} = tmpclass;
@@ -55,20 +58,13 @@ for i = 1:length(classifiers)
     fprintf('Success probability on train data: %f\n',offclass{i}.probSuccTrain);
     offclass{i} = offclass{i}.testClass();
     fprintf('Success probability on test data: %f\n',offclass{i}.probSuccTest);
+    
+    classname = ['class_' classifiers{i} '.mat'];
+    
+    f_FE = offclass{i}.f_FE;
+    selFeatures = offclass{i}.selFeatures;
+    class = offclass{i}.class;    
+    save([classpath classname],'f_FE','selFeatures','class');
 end
 
 
-%% online analysis
-onlinepath = [rootpath 'bci4neurorobotics-data/smr/20150915_b1/'];
-
-onfile{1} = 'b1.20150915.101044.online.mi.mi_rlbf.gdf';
-onfile{2} = 'b1.20150915.101734.online.mi.mi_rlbf.gdf';
-onfile{3} = 'b1.20150915.102331.online.mi.mi_rlbf.gdf';
-onfile{4} = 'b1.20150915.103128.online.mi.mi_rlbf.gdf';
-
-online = {};
-for i = 1:length(classifiers)
-    online{i} = bci_online(onfile,onlinepath,codepath);
-    online{i} = online{i}.featureExtraction(offclass{i}.f_FE,offclass{i}.selFeatures);
-    online{i} = online{i}.computePP(offclass{i}.class);
-end
