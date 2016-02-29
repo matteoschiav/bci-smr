@@ -36,9 +36,15 @@ classdef bci_online < bci_stack
 
         % accumulation framework parameters
         alpha           % alpha used in the accumulation framework
-        P               % accumulated probability for the trial
+        P               % accumulated probability for the trial [trial]
         threshold       % threshold used in the accumulation framework
         result          % result of the accumulation framework
+        
+        % results of the online cycle
+        hit             % events where cue and result are equal
+        miss            % events where cue and result are different
+        none            % events where no result is issued
+        probSucc        % success probability of the cycle
     end
     
     methods
@@ -82,6 +88,45 @@ classdef bci_online < bci_stack
             
             this = this.set_classifier(cls);
             [this.pp,cls] = classTest(this.class,this.logPSD_sel);
+        end
+        
+        function this = accumParam(this,a,thres)
+            this.alpha = a;
+            this.threshold = thres;
+        end
+        
+        function this = onlineCycle(this)
+            this.P = zeros(this.NumTrials,2);
+            this.result = zeros(this.NumTrials,1);
+            for i = 1:length(this.WinCuePos)
+%                 disp(['Cycle number ' num2str(i) ', Event = ',num2str(this.TrialLb(i))]);
+                this.P(i,:) = this.pp(this.WinCuePos(i),:);
+%                 disp(['P1 = ' num2str(this.P(i,1)) ' - P2 = ' num2str(this.P(i,2))]);
+                for j = this.WinCuePos(i)+1:this.WinEndPos(i)
+                    if this.P(i,1)>this.threshold || this.P(i,2)>this.threshold
+                        break
+                    end
+                    this.P(i,1) = this.alpha*this.P(i,1) + (1-this.alpha)*this.pp(j,1);
+                    this.P(i,2) = this.alpha*this.P(i,2) + (1-this.alpha)*this.pp(j,2);
+%                     disp(['P1 = ' num2str(this.P(i,1)) ' - P2 = ' num2str(this.P(i,2))]);
+                end
+                if this.P(i,1)>this.threshold
+%                     disp(['Event = ' num2str(this.Events(1))]);
+                    this.result(i) = this.Events(1);
+                elseif this.P(i,2)>this.threshold
+%                     disp(['Event = ' num2str(this.Events(2))]);
+                    this.result(i) = this.Events(2);
+                else
+%                     disp(['Impossible to discriminate'])
+                end
+            end
+            
+            this.hit = length(find(this.result==this.TrialLb));
+            this.none = length(find(this.result==0));
+            this.miss = this.NumTrials - this.none - this.hit;
+            
+            this.probSucc = this.hit/this.NumTrials;
+            
         end
 
     end
